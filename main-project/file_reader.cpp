@@ -1,12 +1,13 @@
 #include "file_reader.h"
 #include "constants.h"
-
 #include <fstream>
 #include <cstring>
+#include <cstdlib>
 
-date convert(char* str)
-{
-    date result;
+using namespace std;
+
+Date convertDate(char* str) {
+    Date result;
     char* context = NULL;
     char* str_number = strtok_s(str, ".", &context);
     result.day = atoi(str_number);
@@ -17,34 +18,50 @@ date convert(char* str)
     return result;
 }
 
-void read(const char* file_name, book_subscription* array[], int& size)
-{
-    std::ifstream file(file_name);
-    if (file.is_open())
-    {
+Time convertTime(char* str) {
+    Time result;
+    char* context = NULL;
+    char* str_number = strtok_s(str, ":", &context);
+    result.hours = atoi(str_number);
+    str_number = strtok_s(NULL, ":", &context);
+    result.minutes = atoi(str_number);
+    str_number = strtok_s(NULL, ":", &context);
+    result.seconds = atoi(str_number);
+    return result;
+}
+
+void readPhoneCalls(const char* file_name, PhoneCall* array[], int& size) {
+    ifstream file(file_name);
+    if (file.is_open()) {
         size = 0;
         char tmp_buffer[MAX_STRING_SIZE];
-        while (!file.eof())
-        {
-            book_subscription* item = new book_subscription;
-            file >> item->reader.last_name;
-            file >> item->reader.first_name;
-            file >> item->reader.middle_name;
+
+        file.getline(tmp_buffer, MAX_STRING_SIZE);
+
+        while (!file.eof()) {
+            PhoneCall* item = new PhoneCall;
+
+            file >> item->number;
+
             file >> tmp_buffer;
-            item->start = convert(tmp_buffer);
+            item->callDate = convertDate(tmp_buffer);
+
             file >> tmp_buffer;
-            item->finish = convert(tmp_buffer);
-            file >> item->author.last_name;
-            file >> item->author.first_name;
-            file >> item->author.middle_name;
-            file.read(tmp_buffer, 1); // чтения лишнего символа пробела
-            file.getline(item->title, MAX_STRING_SIZE);
+            item->startTime = convertTime(tmp_buffer);
+
+            file >> tmp_buffer;
+            item->duration = convertTime(tmp_buffer);
+
+            file >> item->tariff;
+            file >> item->costPerMinute;
+
             array[size++] = item;
+
+            file.getline(tmp_buffer, MAX_STRING_SIZE);
         }
         file.close();
     }
-    else
-    {
-        throw "Ошибка открытия файла";
+    else {
+        throw "  ";
     }
 }
